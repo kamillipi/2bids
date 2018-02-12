@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Pipeline xmlns="http://nrg.wustl.edu/pipeline" xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://nrg.wustl.edu/pipeline ..\schema\pipeline.xsd"
+	xmlns:fileUtils="http://www.xnat.org/java/org.nrg.imagingtools.utils.FileUtils">
+	<name>XNAT2BIDS2</name>
+	<location>bids2</location>
+	<description>Pipeline creates BIDS2 output from DICOM files using XNAT
+		pipeline engine.</description>
+	<documentation>
+		<authors>
+			<author>
+				<lastname>Lipinski</lastname>
+				<firstname>Kamil</firstname>
+				<contact>
+					<email>lipinski.kamil@yahoo.pl</email>
+				</contact>
+			</author>
+		</authors>
+		<version>20170901</version>
+		<input-parameters>
+			<parameter>
+				<name>scanids</name>
+				<values>
+					<schemalink>xnat:imageSessionData/scans/scan/ID</schemalink>
+				</values>
+				<description>Scan ids of all the scans of the session</description>
+			</parameter>
+			<parameter>
+				<name>xnat_id</name>
+				<values>
+					<schemalink>xnat:imageSessionData/ID</schemalink>
+				</values>
+				<description>XNAT ID (Accession Number) of the session</description>
+			</parameter>
+			<parameter>
+				<name>sessionId</name>
+				<values>
+					<schemalink>xnat:imageSessionData/label</schemalink>
+				</values>
+				<description>Session label</description>
+			</parameter>
+			<parameter>
+				<name>project</name>
+				<values>
+					<schemalink>xnat:imageSessionData/project</schemalink>
+				</values>
+				<description>Project ID</description>
+			</parameter>
+			<parameter>
+				<name>subject</name>
+				<values>
+					<schemalink>xnat:imageSessionData/subject_ID</schemalink>
+				</values>
+				<description>Subject ID</description>
+			</parameter>
+			<parameter>
+				<name>sublabel</name>
+				<values>
+					<csv></csv>
+				</values>
+				<description>Subject ID</description>
+			</parameter>
+		</input-parameters>
+	</documentation>
+	<outputFileNamePrefix>^concat(/Pipeline/parameters/parameter[name='logdir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='label']/values/unique/text())^
+	</outputFileNamePrefix>
+	<loop id="series"
+		xpath="^/Pipeline/parameters/parameter[name='scanids']/values/list^" />
+	<parameters>
+		<parameter>
+			<name>sub</name>
+			<values>
+				<unique>^fileUtils:GetColumn(/Pipeline/parameters/parameter[name='host']/values/unique/text(),/Pipeline/parameters/parameter[name='user']/values/unique/text(),/Pipeline/parameters/parameter[name='pwd']/values/unique/text(),
+					concat('/data/subjects/',/Pipeline/parameters/parameter[name='subject']/values/unique/text(),'?handler=values&amp;format=json&amp;columns=label'),'label')^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>finallabel</name>
+			<values>
+				<unique>^if(
+							if(boolean(/Pipeline/parameters/parameter[name='sublabel']))
+								then
+								/Pipeline/parameters/parameter[name='sublabel']/values/unique/text()!=''
+								else false() )
+							then
+							/Pipeline/parameters/parameter[name='sublabel']/values/unique/text()
+							else
+							/Pipeline/parameters/parameter[name='sub']/values/unique/text()^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>workdir</name>
+			<values>
+				<unique>^concat(/Pipeline/parameters/parameter[name='builddir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='finallabel']/values/unique/text())^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>logdir</name>
+			<values>
+				<unique>^concat(/Pipeline/parameters/parameter[name='workdir']/values/unique/text(),'/LOGS')^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>rawdir</name>
+			<values>
+				<unique>^concat(/Pipeline/parameters/parameter[name='workdir']/values/unique/text(),'/RAW')^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>bidsdir</name>
+			<values>
+				<unique>^concat(/Pipeline/parameters/parameter[name='workdir']/values/unique/text(),'/sub-',/Pipeline/parameters/parameter[name='finallabel']/values/unique/text())^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>tempdir</name>
+			<values>
+				<unique>^concat(/Pipeline/parameters/parameter[name='workdir']/values/unique/text(),'/TEMP')^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>anatdir</name>
+			<values>
+				<unique>^concat(/Pipeline/parameters/parameter[name='bidsdir']/values/unique/text(),'/anat')^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>resolved_host</name>
+			<values>
+				<unique>^if(boolean(/Pipeline/parameters/parameter[name='aliasHost']))
+					then
+					/Pipeline/parameters/parameter[name='aliasHost']/values/unique/text()
+					else
+					/Pipeline/parameters/parameter[name='host']/values/unique/text()^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>email_subject</name>
+			<values>
+				<unique>^concat('XNAT update: BIDS output generated for
+					',/Pipeline/parameters/parameter[name='label']/values/unique/text())^
+				</unique>
+			</values>
+		</parameter>
+		<parameter>
+			<name>email_body</name>
+			<values>
+				<unique>^concat('Dear
+					',/Pipeline/parameters/parameter[name='userfullname']/values/unique/text(),',&lt;br&gt;
+					&lt;p&gt;BIDS output have been generated for ',
+					/Pipeline/parameters/parameter[name='label']/values/unique/text(),'.
+					Details &lt;a
+					href="',/Pipeline/parameters/parameter[name='resolved_host']/values/unique/text(),'/data/experiments',/Pipeline/parameters/parameter[name='id']/values/unique/text(),'?format=html"&gt;here.&lt;/a&gt;
+					&lt;/p&gt;&lt;br&gt;&lt;/p&gt;&lt;br&gt;XNAT Team.')^</unique>
+			</values>
+		</parameter>
+	</parameters>
+	<steps>
+		<step id="mkdir_raw" description="Create RAW folder">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^/Pipeline/parameters/parameter[name='rawdir']/values/unique/text()^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="mkdir_temp" description="Create TEMP folder">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^/Pipeline/parameters/parameter[name='tempdir']/values/unique/text()^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="mkdir_bids" description="Create BIDS folder">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^/Pipeline/parameters/parameter[name='bidsdir']/values/unique/text()^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="mkdir_anat" description="Create Anatomical folder">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^/Pipeline/parameters/parameter[name='anatdir']/values/unique/text()^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="mkdir_func" description="Create Functional folder">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^concat(/Pipeline/parameters/parameter[name='bidsdir']/values/unique/text(),'/func')^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="mkdir_dti" description="Create dwi folder">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^concat(/Pipeline/parameters/parameter[name='bidsdir']/values/unique/text(),'/dwi')^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="mkdir_raw_series" description="Create folder for each series in RAW subfolder"
+			workdirectory="^/Pipeline/parameters/parameter[name='rawdir']/values/unique/text()^">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^PIPELINE_LOOPON(series)^</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="mkdir_bids_outp" description="Create folder for each series in output dir"
+			workdirectory="^/Pipeline/parameters/parameter[name='tempdir']/values/unique/text()^">
+			<resource name="mkdir" location="commandlineTools">
+				<argument id="dirname">
+					<value>^PIPELINE_LOOPON(series)^</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="get" description="Download scan DICOMs"
+			workdirectory="^concat(/Pipeline/parameters/parameter[name='rawdir']/values/unique/text(),'/',PIPELINE_LOOPON(series))^">
+			<resource name="XnatDataClient" location="xnat_tools">
+				<argument id="sessionId">
+					<value>^fileUtils:getJSESSION('DUMMY')^</value>
+				</argument>
+				<!-- <argument id="user"> <value>^/Pipeline/parameters/parameter[name='user']/values/unique/text()^</value> 
+					</argument> <argument id="password"> <value>^/Pipeline/parameters/parameter[name='pwd']/values/unique/text()^</value> 
+					</argument> -->
+				<argument id="absolutePath" />
+				<argument id="batch" />
+				<argument id="method">
+					<value>GET</value>
+				</argument>
+				<argument id="remote">
+					<value>^concat('"',/Pipeline/parameters/parameter[name='resolved_host']/values/unique/text(),'/data/experiments/',/Pipeline/parameters/parameter[name='id']/values/unique/text(),'/scans/',PIPELINE_LOOPON(series),'/resources/DICOM/files"')^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="conversion"
+			description="Convert each DICOM series into a 4d NIFTI file and create sidecar json">
+			<resource name="dcm2niix" location="bids2/resources">
+				<argument id="Compression">
+					<value>y</value>
+				</argument>
+				<argument id="Merge">
+					<value>y</value>
+				</argument>
+				<argument id="Jsons">
+					<value>y</value>
+				</argument>
+				<argument id="Output">
+					<value>^concat(/Pipeline/parameters/parameter[name='tempdir']/values/unique/text(),'/',PIPELINE_LOOPON(series))^
+					</value>
+				</argument>
+				<argument id="input">
+					<value>^concat(/Pipeline/parameters/parameter[name='rawdir']/values/unique/text(),'/',PIPELINE_LOOPON(series))^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="move" description="Places the files in the right subfolders"
+			workdirectory="^/Pipeline/parameters/parameter[name='tempdir']/values/unique/text()^">
+			<resource name="ordnung" location="bids2/resources">
+				<argument id="input">
+					<value>^/Pipeline/parameters/parameter[name='tempdir']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="label">
+					<value>^/Pipeline/parameters/parameter[name='finallabel']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="output">
+					<value>^/Pipeline/parameters/parameter[name='bidsdir']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="session_label">
+					<value>^/Pipeline/parameters/parameter[name='sessionId']/values/unique/text()^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="compress" description="compress"
+			workdirectory="^/Pipeline/parameters/parameter[name='workdir']/values/unique/text()^">
+			<resource name="zip" location="commandlineTools">
+				<argument id="recursive">
+				</argument>
+				<argument id="archive">
+					<value>^concat(/Pipeline/parameters/parameter[name='finallabel']/values/unique/text(),'.zip')^
+					</value>
+				</argument>
+				<argument id="folder">
+					<value>^concat('sub-',/Pipeline/parameters/parameter[name='finallabel']/values/unique/text(),'/')^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="UPLOAD" description="Upload compressed package">
+			<resource name="XnatDataClient" location="xnat_tools">
+				<argument id="sessionId">
+					<value>^fileUtils:getJSESSION('DUMMY')^</value>
+				</argument>
+				<!-- <argument id="user"> <value>^/Pipeline/parameters/parameter[name='user']/values/unique/text()^</value> 
+					</argument> <argument id="password"> <value>^/Pipeline/parameters/parameter[name='pwd']/values/unique/text()^</value> 
+					</argument> -->
+				<argument id="method">
+					<value>PUT</value>
+				</argument>
+				<argument id="remote">
+					<value>^concat('"',/Pipeline/parameters/parameter[name='resolved_host']/values/unique/text(),'/data/experiments/',/Pipeline/parameters/parameter[name='id']/values/unique/text(),'/resources/bids/files?overwrite=true&amp;format=zip&amp;reference=',/Pipeline/parameters/parameter[name='workdir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='finallabel']/values/unique/text(),'.zip','"')^
+					</value>
+				</argument>
+			</resource>
+		</step>
+		<step id="END-Notify" description="Notify">
+			<resource name="Notifier" location="notifications">
+				<argument id="user">
+					<value>^/Pipeline/parameters/parameter[name='user']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="password">
+					<value>^/Pipeline/parameters/parameter[name='pwd']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="to">
+					<value>^/Pipeline/parameters/parameter[name='useremail']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="cc">
+					<value>^/Pipeline/parameters/parameter[name='adminemail']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="from">
+					<value>^/Pipeline/parameters/parameter[name='adminemail']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="subject">
+					<value>^/Pipeline/parameters/parameter[name='email_subject']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="host">
+					<value>^/Pipeline/parameters/parameter[name='mailhost']/values/unique/text()^
+					</value>
+				</argument>
+				<argument id="body">
+					<value>^/Pipeline/parameters/parameter[name='email_body']/values/unique/text()^
+					</value>
+				</argument>
+			</resource>
+		</step>
+	</steps>
+</Pipeline>
