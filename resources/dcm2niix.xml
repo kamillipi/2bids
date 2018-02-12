@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Resource xmlns="http://nrg.wustl.edu/pipeline">
+	<name>dcm2niix</name>
+	<location>/data/xnat/pipeline/catalog/bids2/executable</location>
+	<type>Executable</type>
+	<description>Generates NIFTI files from DICOM</description>
+	<input>
+		<argument id="Compression">
+			<name>z</name>
+			<description>Compress [Y|N]</description>
+		</argument>
+		<argument id="Merge">
+			<name>m</name>
+			<description>merge [Y|N]</description>
+		</argument>
+		<argument id="Jsons">
+			<name>b</name>
+			<description>Create side-car jsons for bids output [Y|N]</description>
+		</argument>
+		<argument id="Output">
+			<name>o</name>
+			<description>Output Folder</description>
+		</argument>
+		<argument id="input"/>
+	</input>
+</Resource>

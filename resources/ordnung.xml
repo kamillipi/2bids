@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Resource xmlns="http://nrg.wustl.edu/pipeline">
+	<name>ordnung.sh</name>
+	<location>/data/xnat/pipeline/catalog/bids2/executable</location>
+	<type>Executable</type>
+	<description>Moves scans to proper directory</description>
+	<input>
+	<argument id="input"/>
+	<argument id="label"/>
+	<argument id="output"/>
+	<argument id="session_label"/>
+	</input>
+</Resource>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Resource xmlns="http://nrg.wustl.edu/pipeline">
+	<name>dcm2nii</name>
+	<location>/data/xnat/pipeline/catalog/BIDS/executable</location>
+	<type>Executable</type>
+	<description>Generates NIFTI files from DICOM</description>
+	<input>
+		<argument id="anonymize">
+			<name>a</name>
+			<description>Anonymize [Y|N]</description>
+		</argument>
+		<argument id="protocol">
+			<name>p</name>
+			<description>Protocol in filename [Y|N]</description>
+		</argument>
+		<argument id="date">
+			<name>d</name>
+			<description>Date in filename [Y|N]</description>
+		</argument>
+		<argument id="events">
+			<name>e</name>
+			<description>Events in filename [Y|N]</description>
+		</argument>
+		<argument id="source">
+			<name>f</name>
+			<description>Source in filename [Y|N]</description>
+		</argument>
+		<argument id="gzip">
+			<name>g</name>
+			<description>gzip [Y|N]</description>
+		</argument>
+		<argument id="id">
+			<name>i</name>
+			<description>ID in filename [Y|N]</description>
+		</argument>
+		<argument id="n">
+			<name>n</name>
+			<description>nii [Y|N]</description>
+		</argument>
+		<argument id="r">
+			<name>r</name>
+			<description>Reorient [Y|N]</description>
+		</argument>
+		<argument id="s">
+			<name>s</name>
+			<description>[Y|N]</description>
+		</argument>
+		<argument id="x">
+			<name>x</name>
+			<description>x [Y|N]</description>
+		</argument>
+		<argument id="output">
+			<name>o</name>
+			<description>Output Folder</description>
+		</argument>
+		<argument id="input"/>
+	</input>
+</Resource>
