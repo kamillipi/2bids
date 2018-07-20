@@ -19,13 +19,13 @@ Import it like a regular pipeline:
 ```
 
 * Go to Administration->pipelines->add pipeline to repository,
-* Enter same path as in the step above,
+* Enter same path as in the step above + XNAT2bids.xml,
 * Add pipeline to your project,
 * You are good to go!
 
 ### Usage
 
-Pipeline needs to run for each subject individually.
+Pipeline needs to run for each session individually.
 
 It lets the user choose series that should be included in bids package or specify custom subject label. Leaving the last field empty sets the subject label sam as in XNAT. The `sub-label_ses-session_run-run_mod` are generated automatically from protocol name and other information stored in XNAT DB. Since task-labels aren't stored in DICOM headers by default, we encourage to check the data and fill this field properly.
 
