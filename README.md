@@ -20,6 +20,7 @@ Import it like a regular pipeline:
 
 * Go to Administration->pipelines->add pipeline to repository,
 * Enter same path as in the step above + XNAT2bids.xml,
+* chmod XNAT2bids.xml to make it executable 
 * Add pipeline to your project,
 * You are good to go!
 
